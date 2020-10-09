@@ -250,7 +250,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
         Imgproc.dilate(bwIMG, bwIMG, new Mat(), new Point(-1, 1), 1);
 
 
-        new Thread(() -> {
+       /* new Thread(() -> {
             Bitmap ob = Bitmap.createBitmap(bwIMG.cols(), bwIMG.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(bwIMG, ob);
 //            Matrix matrix = new Matrix();
@@ -264,7 +264,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
             runOnUiThread(() -> {
                 imageView.setImageBitmap(ob);
             });
-        }).start();
+        }).start();*/
 
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
