@@ -65,7 +65,7 @@ public class DrawRectangle extends View {
     }
 
     void init() {
-        rectPaint.setColor(Color.BLUE);
+        rectPaint.setColor(Color.GREEN);
         rectPaint.setAntiAlias(true);
         rectPaint.setDither(true);
         rectPaint.setStrokeWidth(6f);

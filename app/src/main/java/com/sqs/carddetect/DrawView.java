@@ -34,8 +34,8 @@ public class DrawView extends ImageView {
         init();
     }
     void init(){
-        paint.setColor(Color.BLUE);
-        paint.setStrokeWidth(7f);
+        paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(3f);
         paint.setStyle(Paint.Style.STROKE);
     }
 

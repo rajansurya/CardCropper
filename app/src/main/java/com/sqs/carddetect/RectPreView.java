@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
@@ -32,7 +33,7 @@ import static com.sqs.carddetect.RectDetection.fromBack;
 
 public class RectPreView extends Activity  implements ICropView{
     DrawRectangle paper_rect;
-    Button crop;
+    TextView crop;
 //    Mat grayH;
     ImageView preview,previewcrop;
     Mat ROI;
@@ -48,12 +49,12 @@ public class RectPreView extends Activity  implements ICropView{
         paper_rect = findViewById(R.id.paper_rect);
         cropMat=new CropMat(this,this);
 
-        File sd = new File(Environment.getExternalStorageDirectory() + "/frames");
-        String filename = "frame.txt";
-        File dest = new File(sd, filename);
+//        File sd = new File(Environment.getExternalStorageDirectory() + "/frames");
+//        String filename = "frame.txt";
+//        File dest = new File(sd, filename);
 
 
-        if (dest.exists()) {
+//        if (dest.exists()) {
 //            Mat matsrc = StaticCall.matFromJson(readFromFile(this));
 //            System.out.println("trry " + matsrc.width() + "  " + matsrc.height());
 
@@ -111,7 +112,7 @@ public class RectPreView extends Activity  implements ICropView{
 //            draw_layout.setPath(getPath(point));
 //            draw_layout.invalidate();
 
-        }
+//        }
         crop.setOnClickListener(v -> {
 //            Mat ROI =  grayH.submat((int) (point.get(0).x*xScaleFactor), (int) ((point.get(0).x + heighrsta)*xScaleFactor), (int) (point.get(0).y*xScaleFactor), (int)(( point.get(0).y + witdhtsta)*xScaleFactor));
 //           Mat res= cropMat(grayH);

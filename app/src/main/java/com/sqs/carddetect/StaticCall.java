@@ -33,7 +33,7 @@ public class StaticCall {
 
 //    Mat bwIMG, hsvIMG, lrrIMG, urrIMG, dsIMG, usIMG, cIMG, hovIMG;
 //    MatOfPoint2f approxCurve;
-static double max_rect = 0;
+/*static double max_rect = 0;
    static Mat bwIMG = new Mat();
     static  Mat  dsIMG = new Mat();
     static  Mat  hsvIMG = new Mat();
@@ -42,9 +42,9 @@ static double max_rect = 0;
     static  Mat usIMG = new Mat();
     static  Mat cIMG = new Mat();
     static  Mat hovIMG = new Mat();
-    static  MatOfPoint2f approxCurve = new MatOfPoint2f();
+    static  MatOfPoint2f approxCurve = new MatOfPoint2f();*/
 
-    public static Observable<List<Point>> convertMat(byte[] bytes, int width, int height){
+    /*public static Observable<List<Point>> convertMat(byte[] bytes, int width, int height){
         return Observable.create(emitter -> {
             System.out.println("bytes "+bytes.length);
             Mat gray = new Mat(height , width, CvType.CV_8UC1);//CV_8UC1
@@ -68,7 +68,7 @@ static double max_rect = 0;
             Imgproc.Canny(usIMG, bwIMG, 0, 100);
 
             Imgproc.dilate(bwIMG, bwIMG, new Mat(), new org.opencv.core.Point(-1, 1), 1);
-           /* new Thread(() -> {
+           *//* new Thread(() -> {
 
                 Bitmap ob = Bitmap.createBitmap(bwIMG.cols(), bwIMG.rows(), Bitmap.Config.ARGB_8888);
                 Utils.matToBitmap(bwIMG, ob);
@@ -83,7 +83,7 @@ static double max_rect = 0;
                 runOnUiThread(() -> {
                     imageView.setImageBitmap(rotatedBitmap);
                 });
-            }).start();*/
+            }).start();*//*
 
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
@@ -147,7 +147,7 @@ static double max_rect = 0;
             }
         });
 
-    }
+    }*/
     private static double angle(org.opencv.core.Point pt1, org.opencv.core.Point pt2, org.opencv.core.Point pt0) {
         double dx1 = pt1.x - pt0.x;
         double dy1 = pt1.y - pt0.y;

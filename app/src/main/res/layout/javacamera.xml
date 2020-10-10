@@ -7,16 +7,32 @@
         android:id="@+id/cameraViewer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
     <ImageView
-        android:id="@+id/pic"
-        android:src="@color/colorAccent"
-        android:layout_width="100dp"
-        android:layout_height="30dp" />
-
+        android:id="@+id/preview"
+        android:layout_marginBottom="50dp"
+        android:layout_width="200dp"
+        android:layout_height="220dp" />
     <com.sqs.carddetect.DrawView
         android:id="@+id/draw_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
+    <ImageView
+        android:id="@+id/pic"
+        android:src="@drawable/round"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp" />
+    <Button
+        android:id="@+id/reset"
+        android:text="Reset"
+        android:gravity="center"
+        android:background="@drawable/circle"
+        android:textColor="@color/white"
+        android:layout_marginBottom="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="50dp"
+        android:layout_height="20dp"/>
 </RelativeLayout>

@@ -23,16 +23,17 @@ import java.util.List;
 
 import static android.content.ContentValues.TAG;
 import static com.sqs.carddetect.RectDetection.corners;
+import static com.sqs.carddetect.RectDetection.rgb90;
 
 public class CropMat {
-    Context context;
-    ICropView iCropView;
-    Mat matsrc;
+    private Context context;
+    private ICropView iCropView;
+    private Mat matsrc;
 
     CropMat(Context context, ICropView iCropView) {
         this.context = context;
         this.iCropView = iCropView;
-        matsrc = StaticCall.matFromJson(readFromFile(context));
+        matsrc =rgb90; //StaticCall.matFromJson(readFromFile(context));
 
         Bitmap bmp = null;
         bmp = Bitmap.createBitmap(matsrc.cols(), matsrc.rows(), Bitmap.Config.ARGB_8888);

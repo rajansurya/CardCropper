@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -35,9 +36,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -47,27 +50,29 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RectDetection extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, Camera.PictureCallback {
 
-    //    public static Rect rstatic;
-    static ArrayList<Point> point = new ArrayList<>();
+    private ArrayList<Point> point = new ArrayList<>();
     static Corners corners = new Corners();
-    static int witdhtsta;
-    static int heighrsta;
-    static double xScaleFactor;
-    static double yScaleFactor;
+    int witdhtsta;
+    int heighrsta;
+    double xScaleFactor;
+    double yScaleFactor;
     static boolean fromBack;
     //view holder
-    CameraBridgeViewBase cameraBridgeViewBase;
+    private CameraBridgeViewBase cameraBridgeViewBase;
     //camera listener callback
-    BaseLoaderCallback baseLoaderCallback;
+    private BaseLoaderCallback baseLoaderCallback;
     //image holder
-    Mat bwIMG, hsvIMG, lrrIMG, urrIMG, dsIMG, usIMG, cIMG, hovIMG;
-    MatOfPoint2f approxCurve;
-    int threshold;
-    ImageView imageView;
-    Mat img;
-    double max_rect = 0;
-    MatOfPoint cntMax = null;
-    DrawView draw_layout;
+    private Mat bwIMG, hsvIMG, lrrIMG, urrIMG, dsIMG, usIMG, cIMG, hovIMG;
+    private MatOfPoint2f approxCurve;
+    private int threshold;
+    private ImageView imageView,preview;
+    private Mat img;
+    private double max_rect = 0;
+    private MatOfPoint cntMax = null;
+    private DrawView draw_layout;
+    static Mat rgb90;
+    private boolean isClicked;
+    private Button reset;
 
     private static double angle(Point pt1, Point pt2, Point pt0) {
         double dx1 = pt1.x - pt0.x;
@@ -81,17 +86,32 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.javacamera);
+        reset = findViewById(R.id.reset);
         draw_layout = findViewById(R.id.draw_layout);
         //initialize treshold
         threshold = 100;
         point.clear();
         imageView = findViewById(R.id.pic);
+        preview=findViewById(R.id.preview);
         cameraBridgeViewBase = findViewById(R.id.cameraViewer);
         cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
         cameraBridgeViewBase.setCvCameraViewListener(this);
+        reset.setOnClickListener(view -> {
+            point.clear();
+            max_rect = 0;
+            cntMax = null;
+            draw_layout.setPath(getPath(point));
+            draw_layout.invalidate();
+        });
         imageView.setOnClickListener(v -> {
             try {
-
+                if (!isClicked) {
+                    isClicked = true;
+                    callNext().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(o -> {
+                        startActivity(new Intent(RectDetection.this, RectPreView.class));
+                        isClicked = false;
+                    });
+                }
                /* SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
                 String currentDateandTime = sdf.format(new Date());
                 String fileName = Environment.getExternalStorageDirectory().getPath() +
@@ -106,14 +126,13 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
                // String filename = "/storage/emulated/0/DCIM/Camera/samplepass.jpg";
                 Highgui.imwrite(fileName, img);*/
 
-                saveFile()
+               /* saveFile()
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(o -> {
-                            System.out.println("HHHHHHHHH");
                             startActivity(new Intent(RectDetection.this, RectPreView.class));
 
-                        });
+                        });*/
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -146,6 +165,15 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
 
     }
 
+    Observable<Object> callNext() {
+        return Observable.create(emitter -> {
+            rgb90 = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);//CV_8UC1
+            Core.flip(img.t(), rgb90, 1);
+            emitter.onNext(new Path());
+            emitter.onComplete();
+        });
+    }
+
     Observable<Object> saveFile() {
         return Observable.create(emitter -> {
             Bitmap bmp = null;
@@ -160,7 +188,8 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
 */
 
 //                    FileOutputStream out = null;
-                    String filename = "frame.txt";
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
+                    String filename = dateFormat.format(new Date());
                     File sd = new File(Environment.getExternalStorageDirectory() + "/frames");
                     boolean success = true;
                     if (!sd.exists()) {
@@ -250,7 +279,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
         Imgproc.dilate(bwIMG, bwIMG, new Mat(), new Point(-1, 1), 1);
 
 
-       /* new Thread(() -> {
+        new Thread(() -> {
             Bitmap ob = Bitmap.createBitmap(bwIMG.cols(), bwIMG.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(bwIMG, ob);
 //            Matrix matrix = new Matrix();
@@ -262,9 +291,9 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
 //            Bitmap rotatedBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix, true);
 
             runOnUiThread(() -> {
-                imageView.setImageBitmap(ob);
+                preview.setImageBitmap(ob);
             });
-        }).start();*/
+        }).start();
 
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
@@ -298,6 +327,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
                 Collections.sort(cos);
 
                 double mincos = cos.get(0);
+
                 double maxcos = cos.get(cos.size() - 1);
 
                 if (numberVertices == 4 && mincos >= -0.1 && maxcos <= 0.3) {
@@ -307,7 +337,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
                         List<Point> points = Arrays.asList(approxCurve.toArray());
                         max_rect = area;
                         cntMax = cnt;
-                        img = dst;
+//                        img = dst;
 
                         setLabel(dst, "X", cntMax, points, grayH);
                     }
@@ -319,6 +349,7 @@ public class RectDetection extends AppCompatActivity implements CameraBridgeView
 
 
         }
+        img = dst;
 
         return dst;
 

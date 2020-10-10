@@ -11,9 +11,9 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk {
+        /*ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
-        }
+        }*/
     }
     buildTypes {
         release {
@@ -30,6 +30,15 @@ android {
             jniLibs.srcDir 'jniLibs'
         }
     }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'mips', 'armeabi-v7a', 'armeabi'
+            universalApk false
+        }
+    }
+
 
 }
 
@@ -44,4 +53,6 @@ dependencies {
     implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }
