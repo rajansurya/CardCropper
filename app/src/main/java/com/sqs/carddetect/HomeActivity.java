@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +27,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -33,10 +36,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class HomeActivity extends Activity {
-    RecyclerView populatelist̥;
-    HomeCardAdapter homeCardAdapter;
-    ImageView camera_icon, galary_icon;
-
+    private RecyclerView populatelist̥;
+    private HomeCardAdapter homeCardAdapter;
+    private ImageView camera_icon, galary_icon;
+static boolean refreshView;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,6 +55,19 @@ public class HomeActivity extends Activity {
         readAllFile().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(stringBitmapHashMap -> {
             if (stringBitmapHashMap != null && stringBitmapHashMap.size() > 0) {
                 homeCardAdapter.UpdateList(stringBitmapHashMap);
+                List<String> filelist=new ArrayList<>();
+                for (Card_Data file:stringBitmapHashMap){
+                    filelist.add(file.getFileString());
+                }
+                convertStringToMat(filelist).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(bitmaps -> {
+                  if (bitmaps !=null) {
+                      for (int i=0;i<bitmaps.size();i++){
+                          stringBitmapHashMap.get(i).setImage(bitmaps.get(i));
+                      }
+
+                          homeCardAdapter.UpdateList(stringBitmapHashMap);
+                  }
+                });
             }
         });
         camera_icon.setOnClickListener(view -> {
@@ -66,6 +82,7 @@ public class HomeActivity extends Activity {
             File directory = new File(path);
             File[] files = directory.listFiles();
             if (files != null) {
+                Collections.reverse(Arrays.asList(files));
                 Log.d("Files", "Size: " + files.length);
                 List<Card_Data> allFies = new ArrayList<>();
                 for (int i = 0; i < files.length; i++) {
@@ -86,13 +103,14 @@ public class HomeActivity extends Activity {
                             }
 
 
-                            Mat mat = StaticCall.matFromJson(stringBuilder.toString());
-                            Bitmap bmp = null;
-                            bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
-                            Utils.matToBitmap(mat, bmp);
+//                            Mat mat = StaticCall.matFromJson(stringBuilder.toString());
+//                            Bitmap bmp = null;
+//                            bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+//                            Utils.matToBitmap(mat, bmp);
                             Card_Data card_data = new Card_Data();
-                            card_data.setImage(bmp);
+//                            card_data.setImage(bmp);
                             card_data.setName(files[i].getName());
+                            card_data.setFileString(stringBuilder.toString());
                             allFies.add(card_data);
                         }
                     } catch (Exception E) {
@@ -111,6 +129,22 @@ public class HomeActivity extends Activity {
         });
 
     }
+
+    Observable<List<Bitmap>> convertStringToMat(List<String> file){
+        return Observable.create(emitter -> {
+            List<Bitmap> image=new ArrayList<>();
+            for (String name:file){
+                Mat mat = StaticCall.matFromJson(name);
+                Bitmap bmp = null;
+                bmp = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+                Utils.matToBitmap(mat, bmp);
+                image.add(bmp);
+            }
+
+            emitter.onNext(image);
+            emitter.onComplete();
+        });
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -118,6 +152,15 @@ public class HomeActivity extends Activity {
             Toast.makeText(getApplicationContext(), "There is a problem", Toast.LENGTH_SHORT).show();
         } else {
             baseLoaderCallback.onManagerConnected(BaseLoaderCallback.SUCCESS);
+        }
+
+        if (refreshView){
+            refreshView=false;
+            readAllFile().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(stringBitmapHashMap -> {
+                if (stringBitmapHashMap != null && stringBitmapHashMap.size() > 0) {
+                    homeCardAdapter.UpdateList(stringBitmapHashMap);
+                }
+            });
         }
     }
     BaseLoaderCallback  baseLoaderCallback = new BaseLoaderCallback(this) {

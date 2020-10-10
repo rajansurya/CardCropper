@@ -6,7 +6,7 @@ import org.opencv.core.Size;
 import java.util.List;
 
 public class Corners {
-    Size size;
+    private Size size;
 
     public Size getSize() {
         return size;
@@ -24,5 +24,5 @@ public class Corners {
         this.corners = corners;
     }
 
-    List<Point> corners;
+    private List<Point> corners;
 }

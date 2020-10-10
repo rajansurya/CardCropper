@@ -1,6 +1,7 @@
 package com.sqs.carddetect;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.CornerPathEffect;
@@ -30,10 +31,12 @@ import static android.content.ContentValues.TAG;
 import static android.content.Context.WINDOW_SERVICE;
 
 public class DrawRectangle extends View {
-    Point defaultTl = new Point(180.0, 320.0);
-    Point defaultTr = new Point(900.0, 320.0);
-    Point defaultBr = new Point(900.0, 1600.0);
-    Point defaultBl = new Point(180.0, 1600.0);
+    int widthPixels=Resources.getSystem().getDisplayMetrics().widthPixels;
+    int heightPixels=Resources.getSystem().getDisplayMetrics().heightPixels;
+    Point defaultTl = new Point(widthPixels/4, heightPixels/4);
+    Point defaultTr = new Point((widthPixels/4)+200, heightPixels/4);
+    Point defaultBr = new Point(widthPixels/4+200, (heightPixels/4)+200);
+    Point defaultBl = new Point(widthPixels/4, (heightPixels/4)+200);
     private Paint rectPaint = new Paint();
     private Paint circlePaint = new Paint();
     private Double ratioX = 1.0;
@@ -109,11 +112,17 @@ public class DrawRectangle extends View {
     void onCorners2Crop(Corners corners, Size size) {
 
         cropMode = true;
-        tl = corners.getCorners().get(0) != null ? corners.getCorners().get(0) : defaultTl;
-        tr = corners.getCorners().get(1) != null ? corners.getCorners().get(1) : defaultTr;
-        br = corners.getCorners().get(3) != null ? corners.getCorners().get(3) : defaultBr;
-        bl = corners.getCorners().get(2) != null ? corners.getCorners().get(2) : defaultBl;
-
+        if (corners.getCorners() !=null) {
+            tl = corners.getCorners().get(0) != null ? corners.getCorners().get(0) : defaultTl;
+            tr = corners.getCorners().get(1) != null ? corners.getCorners().get(1) : defaultTr;
+            br = corners.getCorners().get(3) != null ? corners.getCorners().get(3) : defaultBr;
+            bl = corners.getCorners().get(2) != null ? corners.getCorners().get(2) : defaultBl;
+        }else{
+            tl =  defaultTl;
+            tr =  defaultTr;
+            br =  defaultBr;
+            bl =  defaultBl;
+        }
         WindowManager wm = (WindowManager) getContext().getSystemService(WINDOW_SERVICE);
         final DisplayMetrics displayMetrics = new DisplayMetrics();
         wm.getDefaultDisplay().getMetrics(displayMetrics);

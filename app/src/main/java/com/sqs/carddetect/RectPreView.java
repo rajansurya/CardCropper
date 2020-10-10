@@ -2,6 +2,7 @@ package com.sqs.carddetect;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -11,6 +12,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -28,22 +30,28 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
+import static com.sqs.carddetect.HomeActivity.refreshView;
 import static com.sqs.carddetect.RectDetection.fromBack;
 
 
 public class RectPreView extends Activity  implements ICropView{
-    DrawRectangle paper_rect;
-    TextView crop;
+    private DrawRectangle paper_rect;
+    private TextView crop,savefile;
 //    Mat grayH;
-    ImageView preview,previewcrop;
-    Mat ROI;
-    CropMat cropMat;
+private ImageView preview,previewcrop;
+    private   Mat ROI;
+    private CropMat cropMat;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.rectpreview);
         crop = findViewById(R.id.crop);
+        savefile=findViewById(R.id.savefile);
+        savefile.setVisibility(View.GONE);
         preview = findViewById(R.id.preview);
         previewcrop=findViewById(R.id.previewcrop);
         paper_rect = findViewById(R.id.paper_rect);
@@ -117,6 +125,8 @@ public class RectPreView extends Activity  implements ICropView{
 //            Mat ROI =  grayH.submat((int) (point.get(0).x*xScaleFactor), (int) ((point.get(0).x + heighrsta)*xScaleFactor), (int) (point.get(0).y*xScaleFactor), (int)(( point.get(0).y + witdhtsta)*xScaleFactor));
 //           Mat res= cropMat(grayH);
             cropMat.crop();
+            crop.setVisibility(View.GONE);
+            savefile.setVisibility(View.VISIBLE);
            /* preview.setImageBitmap(null);
             preview.setVisibility(View.GONE);
             Mat tmp = new Mat();
@@ -130,6 +140,14 @@ public class RectPreView extends Activity  implements ICropView{
 //            draw_layout.setPath(getPath(point));
 //            draw_layout.invalidate();
 
+        });
+        savefile.setOnClickListener(view -> {
+            cropMat.saveFile().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(o -> {
+                refreshView=true;
+                Intent intent= new Intent(RectPreView.this,HomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            });
         });
     }
 

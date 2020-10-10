@@ -3,11 +3,14 @@ package com.sqs.carddetect;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Path;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -17,9 +20,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+
+import io.reactivex.Observable;
 
 import static android.content.ContentValues.TAG;
 import static com.sqs.carddetect.RectDetection.corners;
@@ -29,7 +38,7 @@ public class CropMat {
     private Context context;
     private ICropView iCropView;
     private Mat matsrc;
-
+    private  Mat cropedImage;
     CropMat(Context context, ICropView iCropView) {
         this.context = context;
         this.iCropView = iCropView;
@@ -43,12 +52,50 @@ public class CropMat {
     }
 
     void crop() {
-        Mat pc = cropPicture(matsrc, iCropView.getPaperRect().getCorners2Crop());
-        Bitmap croppedBitmap = Bitmap.createBitmap(pc.width(), pc.height(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(pc, croppedBitmap);
+        cropedImage = cropPicture(matsrc, iCropView.getPaperRect().getCorners2Crop());
+        Bitmap croppedBitmap = Bitmap.createBitmap(cropedImage.width(), cropedImage.height(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(cropedImage, croppedBitmap);
         iCropView.getCroppedPaper().setImageBitmap(resize(croppedBitmap, Resources.getSystem().getDisplayMetrics().widthPixels-50,Resources.getSystem().getDisplayMetrics().widthPixels-50));
         iCropView.getPaper().setVisibility(View.GONE);
         iCropView.getPaperRect().setVisibility(View.GONE);
+    }
+    Observable<Object> saveFile() {
+        return Observable.create(emitter -> {
+            Bitmap bmp = null;
+            try {
+                if (cropedImage !=null && cropedImage.cols() > 0 && cropedImage.rows() > 0) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HH_mm_ss");
+                    String filename = dateFormat.format(new Date());
+                    File sd = new File(Environment.getExternalStorageDirectory() + "/frames");
+                    boolean success = true;
+                    if (!sd.exists()) {
+                        success = sd.mkdir();
+                    }
+                    if (success) {
+                        File dest = new File(sd, filename);
+
+                        try {
+                            String matoto = StaticCall.matToJson(cropedImage);
+                            try {
+                                OutputStream outputStream = new FileOutputStream(new File(dest.getAbsolutePath()));
+                                outputStream.write(matoto.getBytes());
+                                outputStream.close();
+                            } catch (IOException e) {
+                                Log.e("Exception", "File write failed: " + e.toString());
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Log.d("TAG", e.getMessage());
+                        }
+                    }
+                }
+                emitter.onNext(new Path());
+                emitter.onComplete();
+            } catch (CvException e) {
+                Log.d("TAG", e.getMessage());
+            }
+        });
     }
 
     Mat cropPicture(Mat picture, List<Point> pts) {
